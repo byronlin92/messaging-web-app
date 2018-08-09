@@ -1,0 +1,85 @@
+<doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+
+	<style>
+	  * { 
+      margin: 0; padding: 0; box-sizing: border-box; }
+      #userNameInput { position: inherit;     }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+	</style>
+
+  </head>
+  <body>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	<script>
+		var userName;
+
+	  $(function () {
+	    var socket = io();
+	    $('#messageInput').submit(function(){
+	       socket.emit('chat message', userName, $('#m').val());
+	      // disable send button once it is sent
+	      document.getElementById("sendButton").disabled = true;
+	      return false;
+	    });
+
+	    socket.on('chat message', function(from, msg){
+	    	if( from == userName) {
+	    		from = "You sent"
+	    	}
+	      $('#messages').append($('<li>').text(from + ": " + msg));
+	    })	
+
+	    $('#userNameInput').submit(function(){
+	    	userName = $('#u').val();
+		    $('#messages').append($('<li>').text(userName + " has joined" ));
+
+	       socket.emit('new connection', userName);
+	      document.getElementById("userNameButton").disabled = true;
+	      return false;
+	    });
+
+	    socket.on('lost connection', function(user) { 
+	      $('#messages').append($('<li>').text(user + " has left"));
+	    })
+
+	  });
+
+	</script>
+
+	<!--following JS will disable send button if text is empty-->
+	<script>
+	    function isTextFieldEmpty() {
+ 			if(document.getElementById("m").value === "") {
+				document.getElementById("sendButton").disabled = true;
+			} else {
+				document.getElementById("sendButton").disabled = false;
+			}
+	    }
+
+	</script>
+	<!--USERNAME INPUT-->
+	Please enter your username
+	<form id="userNameInput" action="">
+      <input id="u" autocomplete="off"/><button id='userNameButton'>Submit</button>
+	</form>
+
+	<!--LIST OF MESSAGES-->
+    <ul id="messages"></ul>
+
+    <!--MESSAGE INPUT-->
+    <form id="messageInput" action="">
+      <input id="m" autocomplete="off" oninput="isTextFieldEmpty()"/><button id='sendButton' disabled >Send</button>
+    </form>
+  </body>
+</html>
