@@ -14,24 +14,29 @@ io.on('connection', function(socket){
     user = userName;
     console.log(user)
     console.log('User: '+ user + ' connected');
+    io.emit('new connection', user);  //io.emit to broadcast to client
+
   });
 
   socket.on('disconnect', function(){
-    console.log('User: '+ user + ' disconnected');
-    io.emit('lost connection', user);
+    if (user != null) {
+      console.log('User: '+ user + ' disconnected');
+      io.emit('lost connection', user);
+      user = null;
+    }
   });
-});
 
-
-io.on('connection', function(socket){
   socket.on('chat message', function(from, msg){
     io.emit('chat message', from, msg);
     console.log(from + ' sent: ' + msg);
   });
+
+
 });
 
+
 http.listen(process.env.PORT||3000, function(){
-  console.log('listening on *:3000');
+  console.log('listening on port');
 });
 
 
